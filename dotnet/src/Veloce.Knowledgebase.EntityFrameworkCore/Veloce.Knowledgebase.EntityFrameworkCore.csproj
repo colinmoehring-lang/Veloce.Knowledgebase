@@ -4,6 +4,12 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+	<RootNamespace>Veloce.Knowledgebase</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Veloce.Knowledgebase.Domain.Shared\Veloce.Knowledgebase.Domain.Shared.csproj" />
+    <ProjectReference Include="..\Veloce.Knowledgebase.Domain\Veloce.Knowledgebase.Domain.csproj" />
+  </ItemGroup>
 
 </Project>

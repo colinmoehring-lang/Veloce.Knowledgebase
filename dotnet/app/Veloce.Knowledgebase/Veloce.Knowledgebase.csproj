@@ -10,4 +10,10 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.11" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Veloce.Knowledgebase.Application\Veloce.Knowledgebase.Application.csproj" />
+    <ProjectReference Include="..\..\src\Veloce.Knowledgebase.EntityFrameworkCore.PostgreSQL\Veloce.Knowledgebase.EntityFrameworkCore.PostgreSQL.csproj" />
+    <ProjectReference Include="..\..\src\Veloce.Knowledgebase.HttpApi\Veloce.Knowledgebase.HttpApi.csproj" />
+  </ItemGroup>
+
 </Project>
