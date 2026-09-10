@@ -1,0 +1,88 @@
+## .NET Build Artifacts
+**/bin/
+**/obj/
+
+## NuGet Packages
+*.nupkg
+*.snupkg
+**/.nuget/
+**/packages/
+!**/packages/repositories.config
+
+## Visual Studio
+**/.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.DotSettings.user
+
+## Visual Studio Code
+**/.vscode/
+*.code-workspace
+
+## JetBrains Rider
+**/.idea/
+
+## Build Results
+**/[Dd]ebug/
+**/[Rr]elease/
+**/x64/
+**/x86/
+**/[Ww][Ii][Nn]32/
+**/[Aa][Rr][Mm]/
+**/[Aa][Rr][Mm]64/
+**/bld/
+**/[Bb]in/
+**/[Oo]bj/
+**/[Ll]og/
+**/[Ll]ogs/
+
+## Test Results
+**/[Tt]est[Rr]esult*/
+**/[Bb]uild[Ll]og.*
+*.VisualState.xml
+TestResult.xml
+nunit-*.xml
+
+## ASP.NET
+wwwroot/dist/
+scss/
+
+## Roslyn analyzers
+generated/
+GeneratedFiles/
+StyleCopReport.xml
+BannedSymbols.txt
+
+## User-specific files
+*.rsuser
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdf
+*.ldf
+*.sdf
+
+## Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+## macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+## IDE - Antigravity/Cursor/Copilot
+**/.vs/
+**/.vscode/
+**/.idea/
+**/*.code-workspace
+**/*.DotSettings.user
+
+## NuGet packages (built)
+**/*.nupkg
+**/*.snupkg

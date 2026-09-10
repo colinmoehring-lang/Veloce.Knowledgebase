@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/app/">
+    <Project Path="dotnet/app/Veloce.Knowledgebase/Veloce.Knowledgebase.csproj" Id="a936bdea-ce7f-4535-88ee-3e8fc6dd965e" />
+  </Folder>
+  <Folder Name="/documentation/">
+    <File Path="documentation/Veloce.Knowledgebase.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="dotnet/src/Veloce.Knowledgebase.Application.Contracts/Veloce.Knowledgebase.Application.Contracts.csproj" Id="0a7609e0-59d2-4ae3-a2c0-c67ef83300a3" />
+    <Project Path="dotnet/src/Veloce.Knowledgebase.Application/Veloce.Knowledgebase.Application.csproj" Id="5afb2521-6dd7-4e6b-8ac6-ac3c880071b1" />
+    <Project Path="dotnet/src/Veloce.Knowledgebase.Domain.Shared/Veloce.Knowledgebase.Domain.Shared.csproj" Id="f0ee5642-0e30-45fb-a519-056f3c2cd858" />
+    <Project Path="dotnet/src/Veloce.Knowledgebase.Domain/Veloce.Knowledgebase.Domain.csproj" Id="add17409-c4f0-4c7b-ae32-99a7eb7411b9" />
+    <Project Path="dotnet/src/Veloce.Knowledgebase.EntityFrameworkCore.PostgreSQL/Veloce.Knowledgebase.EntityFrameworkCore.PostgreSQL.csproj" Id="8f273162-aded-4630-9947-6e672408f297" />
+    <Project Path="dotnet/src/Veloce.Knowledgebase.EntityFrameworkCore/Veloce.Knowledgebase.EntityFrameworkCore.csproj" Id="0e9d69a8-2fe7-40f2-b9ce-1bd9d847bbf0" />
+    <Project Path="dotnet/src/Veloce.Knowledgebase.HttpApi/Veloce.Knowledgebase.HttpApi.csproj" Id="252b3ecb-c921-4608-bb6a-1c9fcee455df" />
+  </Folder>
+</Solution>
