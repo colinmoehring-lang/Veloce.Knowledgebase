@@ -13,4 +13,15 @@
     <ProjectReference Include="..\Veloce.Knowledgebase.Domain\Veloce.Knowledgebase.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Services\Ride\" />
+    <Folder Include="Services\User\" />
+    <Folder Include="Services\Vehicle\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.2.1" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.22.0" />
+  </ItemGroup>
+
 </Project>

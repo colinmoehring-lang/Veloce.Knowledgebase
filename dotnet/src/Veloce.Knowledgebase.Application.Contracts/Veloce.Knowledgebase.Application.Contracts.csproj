@@ -11,4 +11,10 @@
     <ProjectReference Include="..\Veloce.Knowledgebase.Domain.Shared\Veloce.Knowledgebase.Domain.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Services\Ride\" />
+    <Folder Include="Services\User\" />
+    <Folder Include="Services\Vehicle\" />
+  </ItemGroup>
+
 </Project>

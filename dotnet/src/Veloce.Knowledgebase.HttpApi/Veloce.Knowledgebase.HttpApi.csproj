@@ -12,4 +12,14 @@
     <ProjectReference Include="..\Veloce.Knowledgebase.Domain.Shared\Veloce.Knowledgebase.Domain.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+	<PackageReference Include="Asp.Versioning.Mvc" Version="10.2.1" />	
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Services\User\" />
+    <Folder Include="Services\Vehicle\" />
+    <Folder Include="Services\Ride\" />
+  </ItemGroup>
+
 </Project>
