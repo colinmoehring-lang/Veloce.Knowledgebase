@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Veloce.Knowledgebase.Services.Vehicle;
 
-namespace Veloce.Knowledgebase.Infrastructure.Data;
+namespace Veloce.Knowledgebase.Services.Vehicle;
 
 public class VehicleRepository(IVeloceDbContext dbContext) : IVehicleRepository
 {

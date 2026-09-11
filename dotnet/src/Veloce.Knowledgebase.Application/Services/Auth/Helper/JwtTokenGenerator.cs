@@ -2,16 +2,19 @@
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Configuration;
 using Veloce.Knowledgebase.Services.User;
 
 namespace Veloce.Knowledgebase.Services.Auth;
 
-public class JwtTokenGenerator(string secretKey) : IJwtTokenGenerator
+public class JwtTokenGenerator(IConfiguration configuration) : IJwtTokenGenerator
 {
+    private readonly string _secretKey = configuration["Jwt:SecretKey"] ?? "SuperSecretDefaultKeyForDevelopmentOnly123456!";
+
     public string GenerateToken(UserEntity user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes(secretKey);
+        var key = Encoding.UTF8.GetBytes(_secretKey);
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {

@@ -11,8 +11,4 @@
     <ProjectReference Include="..\Veloce.Knowledgebase.Domain.Shared\Veloce.Knowledgebase.Domain.Shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Services\User\" />
-  </ItemGroup>
-
 </Project>

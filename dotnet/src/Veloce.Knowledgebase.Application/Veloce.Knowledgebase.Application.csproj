@@ -14,12 +14,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Services\User\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.2.1" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.22.0" />
+	<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.11" />
   </ItemGroup>
 
 </Project>
