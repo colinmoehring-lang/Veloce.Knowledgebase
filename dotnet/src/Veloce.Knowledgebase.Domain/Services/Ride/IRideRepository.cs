@@ -14,6 +14,16 @@ public interface IRideRepository
         RidePointEntity ridePoint,
         CancellationToken cancellationToken = default);
 
+    Task<ICollection<string>> GetAllRidePointCoordinatesByRideIdAsync(
+        Guid rideId,
+        CancellationToken cancellationToken = default
+    );
+
+    Task<RidePointEntity> GetRidePointByRidePointIdAsync(
+        Guid ridePointId,
+        CancellationToken cancellationToken = default
+    );
+
     Task<RideEntity?> GetRideByIdAsync(
         Guid rideId,
         CancellationToken cancellationToken = default);

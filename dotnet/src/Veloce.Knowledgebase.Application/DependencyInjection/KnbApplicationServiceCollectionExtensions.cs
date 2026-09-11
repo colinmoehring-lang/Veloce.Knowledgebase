@@ -21,6 +21,7 @@ public static class KnbApplicationServiceCollectionExtensions
     {
         services.AddScoped<IAuthAppService, AuthAppService>();
         services.AddScoped<IRideAppService, RideAppService>();
+        services.AddScoped<IRidePointAppService, RidePointAppService>();
         services.AddScoped<IUserAppService, UserAppService>();
         services.AddScoped<IVehicleAppService, VehicleAppService>();
 

@@ -28,6 +28,24 @@ public class RideRepository(IVeloceDbContext dbContext) : IRideRepository
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<ICollection<string>> GetAllRidePointCoordinatesByRideIdAsync(
+        Guid rideId,
+        CancellationToken cancellationToken = default)
+    {
+        return await dbContext.RidePoints
+            .Where(p => p.RideId == rideId)
+            .Select(p => p.Coordinate)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<RidePointEntity> GetRidePointByRidePointIdAsync(
+        Guid ridePointId,
+        CancellationToken cancellationToken = default)
+    {
+        return await dbContext.RidePoints
+            .FirstOrDefaultAsync(p => p.RidePointId == ridePointId, cancellationToken);
+    }
+
     public async Task<RideEntity?> GetRideByIdAsync(
         Guid rideId,
         CancellationToken cancellationToken = default)
