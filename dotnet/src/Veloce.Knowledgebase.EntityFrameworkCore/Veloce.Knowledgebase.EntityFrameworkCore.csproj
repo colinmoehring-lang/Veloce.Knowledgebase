@@ -21,9 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Services\Auth\" />
     <Folder Include="Services\Ride\" />
-    <Folder Include="Services\Vehicle\" />
   </ItemGroup>
 
 </Project>

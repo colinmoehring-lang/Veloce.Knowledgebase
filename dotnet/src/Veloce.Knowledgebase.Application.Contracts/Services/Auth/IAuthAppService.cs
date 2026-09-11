@@ -4,8 +4,10 @@ public interface IAuthAppService
 {
     Task<GenericMessageResponseDto> SignUpAsync(
         SignUpRequestDto input,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<AuthResponseDto> LogInAsync(
-        LogInRequestDto input, CancellationToken cancellationToken = default);
+        LogInRequestDto input, CancellationToken cancellationToken = default
+    );
 }
