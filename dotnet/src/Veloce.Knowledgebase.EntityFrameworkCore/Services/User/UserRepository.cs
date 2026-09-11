@@ -15,6 +15,14 @@ public class UserRepository(
         return await dbContext.Users.FindAsync([userId], cancellationToken);
     }
 
+    public async Task UpdateAsync(
+    UserEntity user,
+    CancellationToken cancellationToken = default)
+    {
+        dbContext.Users.Update(user);
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task AddAsync(UserEntity user, CancellationToken cancellationToken = default)
     {
         await dbContext.Users.AddAsync(user, cancellationToken);

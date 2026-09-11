@@ -14,7 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Services\Ride\" />
     <Folder Include="Services\User\" />
   </ItemGroup>
 

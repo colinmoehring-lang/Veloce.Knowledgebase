@@ -6,6 +6,7 @@ public class UserEntity
     public required string UserName { get; set; }
     public required string PasswordHash { get; set; }
     public decimal? SpeedRecord { get; set; }
-    public decimal? LeanRecord { get; set; }
+    public decimal? LeanRecordLeft { get; set; }
+    public decimal? LeanRecordRight { get; set; }
     public decimal? GForceRecord { get; set; }
 }
