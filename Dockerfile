@@ -1,8 +1,8 @@
-# 1. Build Stage
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+# 1. Build Stage (.NET 10 SDK nutzen)
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-# Kopiere alle .csproj-Dateien unter Beibehaltung der dotnet/-Ordnerstruktur
+# Kopiere alle .csproj-Dateien
 COPY ["dotnet/app/Veloce.Knowledgebase/Veloce.Knowledgebase.csproj", "dotnet/app/Veloce.Knowledgebase/"]
 COPY ["dotnet/src/Veloce.Knowledgebase.Application/Veloce.Knowledgebase.Application.csproj", "dotnet/src/Veloce.Knowledgebase.Application/"]
 COPY ["dotnet/src/Veloce.Knowledgebase.Application.Contracts/Veloce.Knowledgebase.Application.Contracts.csproj", "dotnet/src/Veloce.Knowledgebase.Application.Contracts/"]
@@ -15,19 +15,16 @@ COPY ["dotnet/src/Veloce.Knowledgebase.HttpApi/Veloce.Knowledgebase.HttpApi.cspr
 # NuGet-Pakete wiederherstellen
 RUN dotnet restore "dotnet/app/Veloce.Knowledgebase/Veloce.Knowledgebase.csproj"
 
-# Den gesamten Quellcode (inkl. aller .cs-Dateien) kopieren
+# Quellcode kopieren & veröffentlichen
 COPY . .
-
-# In das App-Verzeichnis wechseln und veröffentlichen
 WORKDIR "/src/dotnet/app/Veloce.Knowledgebase"
 RUN dotnet publish "Veloce.Knowledgebase.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-# 2. Runtime Stage
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+# 2. Runtime Stage (.NET 10 ASP.NET Runtime nutzen)
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
-# Port-Konfiguration für Render
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
 
