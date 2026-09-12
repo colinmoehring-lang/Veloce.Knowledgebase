@@ -5,6 +5,9 @@
   <Folder Name="/documentation/">
     <File Path="documentation/Veloce.Knowledgebase.md" />
   </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="Dockerfile" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="dotnet/src/Veloce.Knowledgebase.Application.Contracts/Veloce.Knowledgebase.Application.Contracts.csproj" Id="0a7609e0-59d2-4ae3-a2c0-c67ef83300a3" />
     <Project Path="dotnet/src/Veloce.Knowledgebase.Application/Veloce.Knowledgebase.Application.csproj" Id="5afb2521-6dd7-4e6b-8ac6-ac3c880071b1" />
