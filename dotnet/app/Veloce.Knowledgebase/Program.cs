@@ -68,14 +68,11 @@ using (var scope = app.Services.CreateScope())
     dbContext.Database.Migrate();
 }
 
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Veloce API v1");
-    });
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Veloce API v1");
+});
 
 app.UseRouting();
 
