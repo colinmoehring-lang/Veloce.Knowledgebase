@@ -1,4 +1,4 @@
-﻿using Veloce.Knowledgebase.Services.User;
+using Veloce.Knowledgebase.Services.User;
 
 namespace Veloce.Knowledgebase.Services.Ride;
 
@@ -39,10 +39,17 @@ public class RideAppService(
     }
 
     public async Task AddRidePointAsync(
+        Guid userId,
         Guid rideId,
         AddRidePointDto input,
         CancellationToken cancellationToken = default)
     {
+        var ride = await rideRepository.GetRideByIdAsync(rideId, cancellationToken);
+        if (ride == null || ride.UserId != userId)
+        {
+            throw new UnauthorizedAccessException("Ride not found or access denied.");
+        }
+
         var point = new RidePointEntity
         {
             RidePointId = Guid.NewGuid(),
@@ -177,13 +184,13 @@ public class RideAppService(
 
         if (ride.VehicleType.Equals("Motorcycle", StringComparison.OrdinalIgnoreCase))
         {
-            if (!user.LeanRecordLeft.HasValue || ride.HighestLeanAngleLeft < user.LeanRecordLeft.Value)
+            if (ride.HighestLeanAngleLeft < 0 && (!user.LeanRecordLeft.HasValue || ride.HighestLeanAngleLeft < user.LeanRecordLeft.Value))
             {
                 user.LeanRecordLeft = ride.HighestLeanAngleLeft;
                 isUpdated = true;
             }
 
-            if (!user.LeanRecordRight.HasValue || ride.HighestLeanAngleRight > user.LeanRecordRight.Value)
+            if (ride.HighestLeanAngleRight > 0 && (!user.LeanRecordRight.HasValue || ride.HighestLeanAngleRight > user.LeanRecordRight.Value))
             {
                 user.LeanRecordRight = ride.HighestLeanAngleRight;
                 isUpdated = true;
@@ -192,7 +199,7 @@ public class RideAppService(
 
         if (isUpdated)
         {
-            await userRepository.UpdateAsync(
+            await userRepository.UpdateUserAsync(
                 user,
                 cancellationToken);
         }

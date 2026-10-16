@@ -41,6 +41,42 @@ public class AuthController(IAuthAppService authAppService) : ControllerBase
         }
     }
 
+    [HttpPost("verify-email")]
+    [ProducesResponseType(
+        StatusCodes.Status200OK,
+        Type = typeof(GenericMessageResponseDto))]
+    [ProducesResponseType(
+        StatusCodes.Status400BadRequest,
+        Type = typeof(string))]
+    [ProducesResponseType(
+        StatusCodes.Status404NotFound,
+        Type = typeof(string))]
+    [ProducesResponseType(
+        StatusCodes.Status500InternalServerError,
+        Type = typeof(string))]
+    public async Task<IActionResult> VerifyEmail(
+        [FromBody] VerifyEmailRequestDto input,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var result = await _authAppService.VerifyEmailAsync(input, cancellationToken);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
     [HttpPost("login")]
     [EnableRateLimiting("AuthRateLimitPolicy")]
     [ProducesResponseType(
@@ -66,6 +102,63 @@ public class AuthController(IAuthAppService authAppService) : ControllerBase
         catch (UnauthorizedAccessException ex)
         {
             return Unauthorized(ex.Message);
+        }
+    }
+
+    [HttpPost("forgot-password")]
+    [EnableRateLimiting("AuthRateLimitPolicy")]
+    [ProducesResponseType(
+        StatusCodes.Status200OK,
+        Type = typeof(GenericMessageResponseDto))]
+    [ProducesResponseType(
+        StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType(
+        StatusCodes.Status500InternalServerError,
+        Type = typeof(string))]
+    public async Task<IActionResult> ForgotPassword(
+        [FromBody] ForgotPasswordRequestDto input,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _authAppService.ForgotPasswordAsync(input, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpPost("reset-password")]
+    [EnableRateLimiting("AuthRateLimitPolicy")]
+    [ProducesResponseType(
+        StatusCodes.Status200OK,
+        Type = typeof(GenericMessageResponseDto))]
+    [ProducesResponseType(
+        StatusCodes.Status400BadRequest,
+        Type = typeof(string))]
+    [ProducesResponseType(
+        StatusCodes.Status404NotFound,
+        Type = typeof(string))]
+    [ProducesResponseType(
+        StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType(
+        StatusCodes.Status500InternalServerError,
+        Type = typeof(string))]
+    public async Task<IActionResult> ResetPassword(
+        [FromBody] ResetPasswordRequestDto input,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var result = await _authAppService.ResetPasswordAsync(input, cancellationToken);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
         }
     }
 }

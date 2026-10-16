@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
 namespace Veloce.Knowledgebase.Services.Ride;
 
@@ -38,7 +38,7 @@ public class RideRepository(IVeloceDbContext dbContext) : IRideRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<RidePointEntity> GetRidePointByRidePointIdAsync(
+    public async Task<RidePointEntity?> GetRidePointByRidePointIdAsync(
         Guid ridePointId,
         CancellationToken cancellationToken = default)
     {

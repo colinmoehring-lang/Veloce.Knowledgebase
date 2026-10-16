@@ -1,87 +1,47 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi;
-using System.Text;
 using Veloce.Knowledgebase;
+using Veloce.Knowledgebase.Extensions;
 
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddKnbNpgSql();
-builder.Services.AddKnbEfCoreRepositories();
-builder.Services.AddKnbAppServices();
-builder.Services.AddKnbApi();
-
-var jwtSecretKey = builder.Configuration["Jwt:SecretKey"]
-    ?? "SuperSecretDefaultKeyForDevelopmentOnly123456!";
-var key = Encoding.UTF8.GetBytes(jwtSecretKey);
-
-builder.Services.AddAuthentication(options =>
+/// <summary>
+/// Application entry point for the Veloce Knowledgebase API.
+/// </summary>
+public static partial class Program
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.RequireHttpsMetadata = false;
-    options.SaveToken = true;
-    options.TokenValidationParameters = new TokenValidationParameters
+    /// <summary>
+    /// Starts the application host.
+    /// </summary>
+    private static async Task Main(string[] args)
     {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key),
-        ValidateIssuer = false,
-        ValidateAudience = false,
-        ClockSkew = TimeSpan.Zero
-    };
-});
+        var app = BuildApplication(args);
+        await app.RunAsync().ConfigureAwait(false);
+    }
 
-builder.Services.AddAuthorization();
-
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo
+    /// <summary>
+    /// Builds and fully configures the <see cref="WebApplication"/> without starting it.
+    /// Useful for integration tests that need a configured host.
+    /// </summary>
+    public static WebApplication BuildApplication(string[] args)
     {
-        Title = "Veloce Knowledgebase API",
-        Version = "v1"
-    });
+        var builder = CreateWebApplicationBuilder(args);
+        var app = builder.Build();
 
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        KnowledgebaseStartup.ApplyMigrations(app);
+        KnowledgebaseStartup.ConfigurePipeline(app);
+
+        return app;
+    }
+
+    /// <summary>
+    /// Creates and configures the <see cref="WebApplicationBuilder"/> with all required services.
+    /// </summary>
+    private static WebApplicationBuilder CreateWebApplicationBuilder(string[] args)
     {
-        Name = "Authorization",
-        Description = "JWT Authorization Header. Beispiel: 'Bearer {token}'",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
+        var builder = WebApplication.CreateBuilder(args);
 
-    c.AddSecurityRequirement(doc => new OpenApiSecurityRequirement
-    {
-        [new OpenApiSecuritySchemeReference("Bearer")] = new List<string>()
-    });
-});
+        builder.Services.AddKnowledgebase();
+        builder.Services.AddKnbAuthentication(builder.Configuration);
+        builder.Services.AddKnbRateLimiting();
+        builder.Services.AddKnbSwagger();
 
-var app = builder.Build();
-
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<VeloceDbContext>();
-    dbContext.Database.Migrate();
+        return builder;
+    }
 }
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Veloce API v1");
-    });
-}
-
-app.UseRouting();
-
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();

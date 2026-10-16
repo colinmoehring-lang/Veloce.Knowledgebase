@@ -1,4 +1,4 @@
-﻿namespace Veloce.Knowledgebase.Services.Ride;
+namespace Veloce.Knowledgebase.Services.Ride;
 
 public interface IRideRepository
 {
@@ -19,7 +19,7 @@ public interface IRideRepository
         CancellationToken cancellationToken = default
     );
 
-    Task<RidePointEntity> GetRidePointByRidePointIdAsync(
+    Task<RidePointEntity?> GetRidePointByRidePointIdAsync(
         Guid ridePointId,
         CancellationToken cancellationToken = default
     );

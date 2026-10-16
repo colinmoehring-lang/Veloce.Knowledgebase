@@ -1,4 +1,4 @@
-﻿using Asp.Versioning;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,8 +14,7 @@ public class VehicleController(IVehicleAppService vehicleAppService) : Controlle
 {
     private readonly IVehicleAppService _vehicleAppService = vehicleAppService;
 
-    private Guid CurrentUserId =>
-        Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+    private Guid CurrentUserId => User.GetRequiredUserId();
 
     [HttpPost]
     [ProducesResponseType(

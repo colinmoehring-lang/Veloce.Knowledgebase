@@ -6,7 +6,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class KnbEfCoreServiceCollectionExtensions
 {
-    public static IServiceCollection AddKnbEfCoreRepositories(this IServiceCollection services)
+    public static IServiceCollection AddKnbEfCore(this IServiceCollection services)
     {
         services.AddScoped<IRideRepository, RideRepository>();
         services.AddScoped<IUserRepository, UserRepository>();

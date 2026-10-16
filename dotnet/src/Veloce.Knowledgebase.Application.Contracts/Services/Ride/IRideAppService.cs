@@ -1,4 +1,4 @@
-﻿namespace Veloce.Knowledgebase.Services.Ride;
+namespace Veloce.Knowledgebase.Services.Ride;
 
 public interface IRideAppService
 {
@@ -8,6 +8,7 @@ public interface IRideAppService
         CancellationToken cancellationToken = default);
 
     Task AddRidePointAsync(
+        Guid userId,
         Guid rideId,
         AddRidePointDto input,
         CancellationToken cancellationToken = default);

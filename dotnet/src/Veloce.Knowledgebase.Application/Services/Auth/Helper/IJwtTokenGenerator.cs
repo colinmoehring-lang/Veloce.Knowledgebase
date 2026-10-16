@@ -4,5 +4,5 @@ namespace Veloce.Knowledgebase.Services.Auth;
 
 public interface IJwtTokenGenerator
 {
-    string GenerateToken(UserEntity user);
+    (string Token, int ExpiresInSeconds) GenerateToken(UserEntity user);
 }

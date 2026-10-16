@@ -1,4 +1,4 @@
-﻿using Asp.Versioning;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,22 +12,31 @@ namespace Veloce.Knowledgebase.Services.Ride;
 public class RidePointController(IRidePointAppService ridePointAppService) : ControllerBase
 {
     private readonly IRidePointAppService _ridePointAppService = ridePointAppService;
+    private Guid CurrentUserId => User.GetRequiredUserId();
 
     [HttpGet("all/{rideId}")]
     [ProducesResponseType(
         StatusCodes.Status200OK,
         Type = typeof(ICollection<string>))]
     [ProducesResponseType(
-        StatusCodes.Status400BadRequest,
+        StatusCodes.Status401Unauthorized,
         Type = typeof(string))]
     [ProducesResponseType(
-        StatusCodes.Status500InternalServerError,
+        StatusCodes.Status404NotFound,
         Type = typeof(string))]
-    public async Task<ICollection<string>> GetAllRidePointCoordinate(
+    public async Task<IActionResult> GetAllRidePointCoordinate(
         Guid rideId,
         CancellationToken cancellationToken)
     {
-        return await _ridePointAppService.GetAllRidePointCoordinatesByRideId(rideId, cancellationToken);
+        try
+        {
+            var coordinates = await _ridePointAppService.GetAllRidePointCoordinatesByRideId(CurrentUserId, rideId, cancellationToken);
+            return Ok(coordinates);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return NotFound(ex.Message);
+        }
     }
 
     [HttpGet("{ridePointId}")]
@@ -35,15 +44,28 @@ public class RidePointController(IRidePointAppService ridePointAppService) : Con
         StatusCodes.Status200OK,
         Type = typeof(RidePointDetailDto))]
     [ProducesResponseType(
-        StatusCodes.Status400BadRequest,
+        StatusCodes.Status401Unauthorized,
         Type = typeof(string))]
     [ProducesResponseType(
-        StatusCodes.Status500InternalServerError,
+        StatusCodes.Status404NotFound,
         Type = typeof(string))]
-    public async Task<RidePointDetailDto> GetRidePointDetailByRidePointId(
+    public async Task<IActionResult> GetRidePointDetailByRidePointId(
         Guid ridePointId,
         CancellationToken cancellationToken)
     {
-        return await _ridePointAppService.GetRidePointDetailByRidePointId(ridePointId, cancellationToken);
+        try
+        {
+            var detail = await _ridePointAppService.GetRidePointDetailByRidePointId(CurrentUserId, ridePointId, cancellationToken);
+            if (detail == null)
+            {
+                return NotFound($"Ride point with ID {ridePointId} not found.");
+            }
+
+            return Ok(detail);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return NotFound(ex.Message);
+        }
     }
 }

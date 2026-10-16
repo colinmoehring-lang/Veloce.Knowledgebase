@@ -1,18 +1,26 @@
-﻿namespace Veloce.Knowledgebase.Services.Ride;
+namespace Veloce.Knowledgebase.Services.Ride;
 
 public class RidePointAppService(
     IRideRepository rideRepository) : IRidePointAppService
 {
     public async Task<ICollection<string>> GetAllRidePointCoordinatesByRideId(
+        Guid userId,
         Guid rideId,
         CancellationToken cancellationToken = default)
     {
+        var ride = await rideRepository.GetRideByIdAsync(rideId, cancellationToken);
+        if (ride == null || ride.UserId != userId)
+        {
+            throw new UnauthorizedAccessException("Ride not found or access denied.");
+        }
+
         return await rideRepository.GetAllRidePointCoordinatesByRideIdAsync(
             rideId,
             cancellationToken);
     }
 
-    public async Task<RidePointDetailDto> GetRidePointDetailByRidePointId(
+    public async Task<RidePointDetailDto?> GetRidePointDetailByRidePointId(
+        Guid userId,
         Guid ridePointId,
         CancellationToken cancellationToken = default)
     {
@@ -22,7 +30,13 @@ public class RidePointAppService(
 
         if (ridePoint is null)
         {
-            throw new Exception($"Ride point with ID {ridePointId} not found.");
+            return null;
+        }
+
+        var ride = await rideRepository.GetRideByIdAsync(ridePoint.RideId, cancellationToken);
+        if (ride == null || ride.UserId != userId)
+        {
+            throw new UnauthorizedAccessException("Ride not found or access denied.");
         }
 
         return new RidePointDetailDto

@@ -6,5 +6,5 @@ public class AuthResponseDto
     public string TokenType { get; set; } = "Bearer";
     public int ExpiresIn { get; set; }
     public Guid UserId { get; set; }
-    public string UserName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
 }

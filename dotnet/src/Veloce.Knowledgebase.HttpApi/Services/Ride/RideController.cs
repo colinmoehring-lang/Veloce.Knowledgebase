@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -12,7 +12,7 @@ namespace Veloce.Knowledgebase.Services.Ride;
 [Route("/api/integration/v{version:apiVersion}/[controller]")]
 public class RideController(IRideAppService rideAppService) : ControllerBase
 {
-    private Guid CurrentUserId => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+    private Guid CurrentUserId => User.GetRequiredUserId();
 
     [HttpPost("start")]
     [ProducesResponseType(
@@ -50,6 +50,7 @@ public class RideController(IRideAppService rideAppService) : ControllerBase
         CancellationToken cancellationToken)
     {
         await rideAppService.AddRidePointAsync(
+            CurrentUserId,
             rideId,
             input,
             cancellationToken);

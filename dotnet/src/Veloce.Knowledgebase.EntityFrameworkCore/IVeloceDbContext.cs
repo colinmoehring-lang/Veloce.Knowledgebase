@@ -8,6 +8,8 @@ namespace Veloce.Knowledgebase;
 public interface IVeloceDbContext
 {
     DbSet<UserEntity> Users { get; set; }
+    DbSet<EmailVerificationCodeEntity> EmailVerificationCodes { get; set; }
+    DbSet<PasswordResetCodeEntity> PasswordResetCodes { get; set; }
     DbSet<VehicleEntity> Vehicles { get; set; }
     DbSet<RideEntity> Rides { get; set; }
     DbSet<RidePointEntity> RidePoints { get; set; }

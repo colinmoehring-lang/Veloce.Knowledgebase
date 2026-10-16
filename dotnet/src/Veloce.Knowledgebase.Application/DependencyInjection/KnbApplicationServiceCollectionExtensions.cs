@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Veloce.Knowledgebase.Services.Auth;
+using Veloce.Knowledgebase.Services.Email;
 using Veloce.Knowledgebase.Services.Ride;
 using Veloce.Knowledgebase.Services.User;
 using Veloce.Knowledgebase.Services.Vehicle;
@@ -20,6 +18,7 @@ public static class KnbApplicationServiceCollectionExtensions
     public static IServiceCollection AddKnbServices(this IServiceCollection services)
     {
         services.AddScoped<IAuthAppService, AuthAppService>();
+        services.AddScoped<IEmailSender, LoggingEmailSender>();
         services.AddScoped<IRideAppService, RideAppService>();
         services.AddScoped<IRidePointAppService, RidePointAppService>();
         services.AddScoped<IUserAppService, UserAppService>();
@@ -32,6 +31,8 @@ public static class KnbApplicationServiceCollectionExtensions
     {
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
+        services.AddScoped<IPasswordValidator, PasswordValidator>();
+        services.AddScoped<IVerificationCodeGenerator, VerificationCodeGenerator>();
 
         return services;
     }

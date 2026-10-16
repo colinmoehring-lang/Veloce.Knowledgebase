@@ -1,4 +1,4 @@
-﻿using Asp.Versioning;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +12,7 @@ namespace Veloce.Knowledgebase.Services.User;
 [Route("/api/integration/v{version:apiVersion}/[controller]")]
 public class UserController(IUserAppService userAppService) : ControllerBase
 {
-    private Guid CurrentUserId => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+    private Guid CurrentUserId => User.GetRequiredUserId();
 
     [HttpGet("records")]
     [ProducesResponseType(
