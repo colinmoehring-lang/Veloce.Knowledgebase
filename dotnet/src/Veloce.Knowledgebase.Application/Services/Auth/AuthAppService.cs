@@ -141,6 +141,7 @@ public class AuthAppService(
 
         user.Status = UserAccountStatus.Active;
         await _userRepository.UpdateUserAsync(user, cancellationToken);
+        await _userRepository.DeleteVerificationCodeAsync(input.Code, cancellationToken);
 
         return new GenericMessageResponseDto
         {

@@ -65,6 +65,20 @@ public class UserRepository(
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task DeleteVerificationCodeAsync(
+        string code,
+        CancellationToken cancellationToken = default)
+    {
+        var codeEntity = await _dbContext.EmailVerificationCodes
+            .FirstOrDefaultAsync(c => c.Code == code, cancellationToken);
+
+        if (codeEntity != null)
+        {
+            _dbContext.EmailVerificationCodes.Remove(codeEntity);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
+    }
+
     public async Task<EmailVerificationCodeEntity?> GetLatestActiveVerificationCodeAsync(
         Guid userId,
         CancellationToken cancellationToken = default)

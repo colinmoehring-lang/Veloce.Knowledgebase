@@ -29,6 +29,10 @@ public interface IUserRepository
         EmailVerificationCodeEntity codeEntity,
         CancellationToken cancellationToken = default);
 
+    Task DeleteVerificationCodeAsync(
+        string code,
+        CancellationToken cancellationToken = default);
+
     Task<EmailVerificationCodeEntity?> GetLatestActiveVerificationCodeAsync(
         Guid userId,
         CancellationToken cancellationToken = default);
