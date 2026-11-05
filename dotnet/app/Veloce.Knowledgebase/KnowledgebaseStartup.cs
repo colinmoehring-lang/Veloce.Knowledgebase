@@ -22,14 +22,11 @@ public static class KnowledgebaseStartup
     /// </summary>
     public static void ConfigurePipeline(WebApplication app)
     {
-        if (app.Environment.IsDevelopment())
+        app.UseSwagger();
+        app.UseSwaggerUI(c =>
         {
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Veloce API v1");
-            });
-        }
+            c.SwaggerEndpoint("/swagger/v1/swagger.json", "Veloce API v1");
+        });
 
         app.UseRouting();
         app.UseRateLimiter();
