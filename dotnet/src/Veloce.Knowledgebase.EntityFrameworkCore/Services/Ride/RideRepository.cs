@@ -34,6 +34,7 @@ public class RideRepository(IVeloceDbContext dbContext) : IRideRepository
     {
         return await dbContext.RidePoints
             .Where(p => p.RideId == rideId)
+            .OrderBy(p => p.Timestamp)
             .Select(p => p.Coordinate)
             .ToListAsync(cancellationToken);
     }
