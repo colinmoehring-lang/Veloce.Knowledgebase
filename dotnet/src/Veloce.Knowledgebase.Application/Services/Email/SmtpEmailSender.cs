@@ -44,8 +44,7 @@ public class SmtpEmailSender(
         string plainContent,
         CancellationToken cancellationToken)
     {
-        var host = _configuration["Smtp:Host"]
-            ?? throw new InvalidOperationException("Smtp:Host is not configured.");
+        var host = _configuration["Smtp:Host"] ?? "smtp-relay.brevo.com";
         var port = int.TryParse(_configuration["Smtp:Port"], out var p) ? p : 587;
         var username = _configuration["Smtp:Username"]
             ?? throw new InvalidOperationException("Smtp:Username is not configured.");

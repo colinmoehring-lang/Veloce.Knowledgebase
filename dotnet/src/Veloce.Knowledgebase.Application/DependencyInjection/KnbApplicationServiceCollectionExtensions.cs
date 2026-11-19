@@ -18,7 +18,7 @@ public static class KnbApplicationServiceCollectionExtensions
     public static IServiceCollection AddKnbServices(this IServiceCollection services)
     {
         services.AddScoped<IAuthAppService, AuthAppService>();
-        services.AddScoped<IEmailSender, LoggingEmailSender>();
+        services.AddScoped<IEmailSender, SmtpEmailSender>();
         services.AddScoped<IRideAppService, RideAppService>();
         services.AddScoped<IRidePointAppService, RidePointAppService>();
         services.AddScoped<IUserAppService, UserAppService>();
