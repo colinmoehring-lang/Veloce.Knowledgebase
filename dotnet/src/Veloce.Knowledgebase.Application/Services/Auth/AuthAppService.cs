@@ -186,7 +186,8 @@ public class AuthAppService(
             TokenType = "Bearer",
             ExpiresIn = expiresIn,
             UserId = user.UserId,
-            Email = user.Email
+            Email = user.Email,
+            Name = user.Name
         };
     }
 
