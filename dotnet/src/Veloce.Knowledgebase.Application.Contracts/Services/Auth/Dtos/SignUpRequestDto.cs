@@ -9,6 +9,8 @@ public class SignUpRequestDto
     [StringLength(256, ErrorMessage = "Email must not exceed 256 characters.")]
     public string Email { get; set; } = string.Empty;
 
+    public string Name { get; set; } = string.Empty;
+
     [Required(ErrorMessage = "Password is required.")]
     [StringLength(128, MinimumLength = 8, ErrorMessage = "Password must be between 8 and 128 characters long.")]
     public string Password { get; set; } = string.Empty;

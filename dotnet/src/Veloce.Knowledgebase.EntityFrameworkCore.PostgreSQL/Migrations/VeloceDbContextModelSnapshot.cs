@@ -204,6 +204,10 @@ namespace Veloce.Knowledgebase.Migrations
                     b.Property<decimal?>("LeanRecordRight")
                         .HasColumnType("numeric");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("NormalizedEmail")
                         .IsRequired()
                         .HasMaxLength(256)

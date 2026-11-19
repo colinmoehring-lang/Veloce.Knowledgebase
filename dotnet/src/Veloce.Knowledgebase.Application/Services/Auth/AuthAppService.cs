@@ -72,6 +72,7 @@ public class AuthAppService(
         var user = new UserEntity
         {
             Email = input.Email.Trim(),
+            Name = input.Name.Trim(),
             NormalizedEmail = normalizedEmail,
             Status = UserAccountStatus.PendingVerification,
             CreatedAtUtc = DateTime.UtcNow
