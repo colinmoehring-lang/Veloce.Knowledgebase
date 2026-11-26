@@ -2,6 +2,12 @@ namespace Veloce.Knowledgebase.Services.Ride;
 
 public interface IRideRepository
 {
+    Task<T?> WithRideLockAsync<T>(
+        Guid userId,
+        Guid rideId,
+        Func<RideEntity, Task<T>> operation,
+        CancellationToken cancellationToken = default) where T : class;
+
     Task AddRideAsync(
         RideEntity ride,
         CancellationToken cancellationToken = default);

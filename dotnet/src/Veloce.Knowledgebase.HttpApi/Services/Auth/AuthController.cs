@@ -1,7 +1,6 @@
 ﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
 
 namespace Veloce.Knowledgebase.Services.Auth;
 
@@ -78,7 +77,6 @@ public class AuthController(IAuthAppService authAppService) : ControllerBase
     }
 
     [HttpPost("login")]
-    [EnableRateLimiting("AuthRateLimitPolicy")]
     [ProducesResponseType(
         StatusCodes.Status200OK,
         Type = typeof(AuthResponseDto))]
@@ -106,7 +104,6 @@ public class AuthController(IAuthAppService authAppService) : ControllerBase
     }
 
     [HttpPost("forgot-password")]
-    [EnableRateLimiting("AuthRateLimitPolicy")]
     [ProducesResponseType(
         StatusCodes.Status200OK,
         Type = typeof(GenericMessageResponseDto))]
@@ -124,7 +121,6 @@ public class AuthController(IAuthAppService authAppService) : ControllerBase
     }
 
     [HttpPost("reset-password")]
-    [EnableRateLimiting("AuthRateLimitPolicy")]
     [ProducesResponseType(
         StatusCodes.Status200OK,
         Type = typeof(GenericMessageResponseDto))]

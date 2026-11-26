@@ -12,6 +12,10 @@ public static class KnbNpgSqlDbContextOptionsExtensions
     {
         var connectionString = configuration.GetConnectionString(KnbPostgreSqlConsts.ConnectionStringName)
             ?? configuration.GetConnectionString("DefaultConnection");
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException("A PostgreSQL connection string must be configured.");
+        }
 
         return optionsBuilder.UseNpgsql(
             connectionString,

@@ -2,8 +2,28 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Veloce.Knowledgebase.Services.Ride;
 
-public class RideRepository(IVeloceDbContext dbContext) : IRideRepository
+public class RideRepository(VeloceDbContext dbContext) : IRideRepository
 {
+    public async Task<T?> WithRideLockAsync<T>(
+        Guid userId,
+        Guid rideId,
+        Func<RideEntity, Task<T>> operation,
+        CancellationToken cancellationToken = default) where T : class
+    {
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        var ride = await dbContext.Rides
+            .FromSqlInterpolated($"SELECT * FROM \"Rides\" WHERE \"RideId\" = {rideId} AND \"UserId\" = {userId} FOR UPDATE")
+            .SingleOrDefaultAsync(cancellationToken);
+        if (ride == null)
+        {
+            return null;
+        }
+
+        var result = await operation(ride);
+        await transaction.CommitAsync(cancellationToken);
+        return result;
+    }
+
     public async Task AddRideAsync(
         RideEntity ride,
         CancellationToken cancellationToken = default)

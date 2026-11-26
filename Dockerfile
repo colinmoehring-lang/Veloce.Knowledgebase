@@ -2,6 +2,8 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
+COPY ["Directory.Packages.props", "./"]
+
 # Kopiere alle .csproj-Dateien
 COPY ["dotnet/app/Veloce.Knowledgebase/Veloce.Knowledgebase.csproj", "dotnet/app/Veloce.Knowledgebase/"]
 COPY ["dotnet/src/Veloce.Knowledgebase.Application/Veloce.Knowledgebase.Application.csproj", "dotnet/src/Veloce.Knowledgebase.Application/"]

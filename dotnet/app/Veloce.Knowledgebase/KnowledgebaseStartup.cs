@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Veloce.Knowledgebase.Extensions;
 
 namespace Veloce.Knowledgebase;
 
@@ -28,10 +29,12 @@ public static class KnowledgebaseStartup
             c.SwaggerEndpoint("/swagger/v1/swagger.json", "Veloce API v1");
         });
 
+        app.UseForwardedHeaders();
         app.UseRouting();
-        app.UseRateLimiter();
+        app.UseMiddleware<AuthIpRateLimitMiddleware>();
         app.UseAuthentication();
         app.UseAuthorization();
+        app.MapGet("/health/live", () => Results.Ok(new { status = "ok" }));
         app.MapControllers();
     }
 }

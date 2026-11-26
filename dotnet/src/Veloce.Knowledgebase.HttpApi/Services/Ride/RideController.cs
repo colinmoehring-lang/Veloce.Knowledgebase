@@ -27,12 +27,15 @@ public class RideController(IRideAppService rideAppService) : ControllerBase
         [FromBody] StartRideDto input,
         CancellationToken cancellationToken)
     {
-        var rideId = await rideAppService.StartRideAsync(
-            CurrentUserId,
-            input,
-            cancellationToken);
-
-        return Ok(new { RideId = rideId });
+        try
+        {
+            var rideId = await rideAppService.StartRideAsync(CurrentUserId, input, cancellationToken);
+            return Ok(new { RideId = rideId });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
     }
 
     [HttpPost("{rideId:guid}/point")]
@@ -49,13 +52,23 @@ public class RideController(IRideAppService rideAppService) : ControllerBase
         [FromBody] AddRidePointDto input,
         CancellationToken cancellationToken)
     {
-        await rideAppService.AddRidePointAsync(
-            CurrentUserId,
-            rideId,
-            input,
-            cancellationToken);
-
-        return Ok();
+        try
+        {
+            await rideAppService.AddRidePointAsync(CurrentUserId, rideId, input, cancellationToken);
+            return Ok();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return NotFound("Ride not found.");
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (RideNotActiveException ex)
+        {
+            return Conflict(ex.Message);
+        }
     }
 
     [HttpPost("{rideId:guid}/stop")]
@@ -71,17 +84,20 @@ public class RideController(IRideAppService rideAppService) : ControllerBase
         Guid rideId,
         CancellationToken cancellationToken)
     {
-        var result = await rideAppService.StopRideAsync(
-            CurrentUserId,
-            rideId,
-            cancellationToken);
-
-        if (result == null)
+        try
         {
-            return NotFound("Ride not found or unauthorized access.");
-        }
+            var result = await rideAppService.StopRideAsync(CurrentUserId, rideId, cancellationToken);
+            if (result == null)
+            {
+                return NotFound("Ride not found or unauthorized access.");
+            }
 
-        return Ok(result);
+            return Ok(result);
+        }
+        catch (RideNotActiveException ex)
+        {
+            return Conflict(ex.Message);
+        }
     }
 
     [HttpGet]

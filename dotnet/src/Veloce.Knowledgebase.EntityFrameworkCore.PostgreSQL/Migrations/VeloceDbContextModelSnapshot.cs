@@ -67,6 +67,9 @@ namespace Veloce.Knowledgebase.Migrations
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
@@ -118,6 +121,25 @@ namespace Veloce.Knowledgebase.Migrations
                     b.ToTable("RidePoints");
                 });
 
+            modelBuilder.Entity("Veloce.Knowledgebase.Services.User.AuthRateLimitBucket", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<int>("Count")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("WindowEndsAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Key");
+
+                    b.HasIndex("WindowEndsAtUtc");
+
+                    b.ToTable("AuthRateLimitBuckets");
+                });
+
             modelBuilder.Entity("Veloce.Knowledgebase.Services.User.EmailVerificationCodeEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -126,8 +148,8 @@ namespace Veloce.Knowledgebase.Migrations
 
                     b.Property<string>("Code")
                         .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)");
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
 
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
@@ -156,8 +178,8 @@ namespace Veloce.Knowledgebase.Migrations
 
                     b.Property<string>("Code")
                         .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)");
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
 
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
@@ -216,6 +238,9 @@ namespace Veloce.Knowledgebase.Migrations
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<Guid>("SecurityStamp")
+                        .HasColumnType("uuid");
 
                     b.Property<decimal?>("SpeedRecord")
                         .HasColumnType("numeric");
@@ -279,6 +304,24 @@ namespace Veloce.Knowledgebase.Migrations
                     b.HasOne("Veloce.Knowledgebase.Services.Ride.RideEntity", null)
                         .WithMany()
                         .HasForeignKey("RideId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Veloce.Knowledgebase.Services.User.EmailVerificationCodeEntity", b =>
+                {
+                    b.HasOne("Veloce.Knowledgebase.Services.User.UserEntity", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Veloce.Knowledgebase.Services.User.PasswordResetCodeEntity", b =>
+                {
+                    b.HasOne("Veloce.Knowledgebase.Services.User.UserEntity", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

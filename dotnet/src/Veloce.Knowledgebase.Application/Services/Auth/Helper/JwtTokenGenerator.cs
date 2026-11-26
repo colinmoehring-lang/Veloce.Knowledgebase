@@ -14,8 +14,7 @@ public class JwtTokenGenerator(IConfiguration configuration) : IJwtTokenGenerato
     public (string Token, int ExpiresInSeconds) GenerateToken(UserEntity user)
     {
         var jwtKey = _configuration["Jwt:SecretKey"]
-            ?? _configuration["Jwt:Key"]
-            ?? "SuperSecretDefaultKeyForDevelopmentOnly123456!";
+            ?? throw new InvalidOperationException("Jwt:SecretKey is not configured.");
         var jwtIssuer = _configuration["Jwt:Issuer"] ?? "Veloce.Knowledgebase";
         var jwtAudience = _configuration["Jwt:Audience"] ?? "Veloce.Knowledgebase.Clients";
         var expiryMinutes = int.TryParse(_configuration["Jwt:ExpiryMinutes"], out var minutes) ? minutes : 120;
@@ -28,6 +27,7 @@ public class JwtTokenGenerator(IConfiguration configuration) : IJwtTokenGenerato
             new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim("security_stamp", user.SecurityStamp.ToString()),
             new Claim("status", user.Status.ToString())
         };
 

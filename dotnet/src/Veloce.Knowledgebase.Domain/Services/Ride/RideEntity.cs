@@ -4,6 +4,7 @@ public class RideEntity
 {
     public required Guid RideId { get; set; } = Guid.NewGuid();
     public required Guid UserId { get; set; }
+    public RideStatus Status { get; set; }
     public Guid? VehicleId { get; set; }
     public required string VehicleType { get; set; }
     public required DateTime StartTime { get; set; }

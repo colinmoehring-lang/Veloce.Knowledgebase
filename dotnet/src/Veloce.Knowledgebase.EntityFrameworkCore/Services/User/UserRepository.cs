@@ -1,12 +1,49 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Veloce.Knowledgebase.Services.User;
 
 public class UserRepository(
-    IVeloceDbContext dbContext) : IUserRepository
+    VeloceDbContext dbContext) : IUserRepository
 {
     private readonly IVeloceDbContext _dbContext = dbContext
         ?? throw new ArgumentNullException(nameof(dbContext));
+
+    public async Task<IAuthTransaction> BeginAuthOperationAsync(
+        string normalizedEmail,
+        CancellationToken cancellationToken = default)
+    {
+        var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            await dbContext.Database.ExecuteSqlInterpolatedAsync(
+                $"SELECT pg_advisory_xact_lock(hashtextextended({normalizedEmail}, 0))",
+                cancellationToken);
+            return new AuthTransaction(transaction);
+        }
+        catch
+        {
+            await transaction.DisposeAsync();
+            throw;
+        }
+    }
+
+    private sealed class AuthTransaction(IDbContextTransaction transaction) : IAuthTransaction
+    {
+        public Task CommitAsync(CancellationToken cancellationToken = default) =>
+            transaction.CommitAsync(cancellationToken);
+
+        public ValueTask DisposeAsync() => transaction.DisposeAsync();
+    }
+
+    public async Task<UserEntity?> GetByIdForUpdateAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Users
+            .FromSqlInterpolated($"SELECT * FROM \"Users\" WHERE \"UserId\" = {userId} FOR UPDATE")
+            .SingleOrDefaultAsync(cancellationToken);
+    }
 
     public async Task<UserEntity?> GetByIdAsync(
         Guid userId,
@@ -54,7 +91,10 @@ public class UserRepository(
         UserEntity user,
         CancellationToken cancellationToken = default)
     {
-        _dbContext.Users.Update(user);
+        if (dbContext.Entry(user).State == EntityState.Detached)
+        {
+            _dbContext.Users.Update(user);
+        }
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
@@ -63,20 +103,6 @@ public class UserRepository(
     {
         await _dbContext.EmailVerificationCodes.AddAsync(codeEntity, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
-    }
-
-    public async Task DeleteVerificationCodeAsync(
-        string code,
-        CancellationToken cancellationToken = default)
-    {
-        var codeEntity = await _dbContext.EmailVerificationCodes
-            .FirstOrDefaultAsync(c => c.Code == code, cancellationToken);
-
-        if (codeEntity != null)
-        {
-            _dbContext.EmailVerificationCodes.Remove(codeEntity);
-            await _dbContext.SaveChangesAsync(cancellationToken);
-        }
     }
 
     public async Task<EmailVerificationCodeEntity?> GetLatestActiveVerificationCodeAsync(

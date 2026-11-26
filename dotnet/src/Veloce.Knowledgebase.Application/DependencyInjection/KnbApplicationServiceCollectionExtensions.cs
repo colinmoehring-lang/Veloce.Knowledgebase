@@ -33,6 +33,7 @@ public static class KnbApplicationServiceCollectionExtensions
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IPasswordValidator, PasswordValidator>();
         services.AddScoped<IVerificationCodeGenerator, VerificationCodeGenerator>();
+        services.AddScoped<VerificationCodeHasher>();
 
         return services;
     }

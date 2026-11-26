@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Logging;
 using Veloce.Knowledgebase.Services.Email;
 using Veloce.Knowledgebase.Services.User;
 
@@ -9,9 +8,9 @@ public class AuthAppService(
     IPasswordValidator passwordValidator,
     IPasswordHasher passwordHasher,
     IVerificationCodeGenerator verificationCodeGenerator,
+    VerificationCodeHasher verificationCodeHasher,
     IJwtTokenGenerator jwtTokenGenerator,
-    IEmailSender emailSender,
-    ILogger<AuthAppService> logger) : IAuthAppService
+    IEmailSender emailSender) : IAuthAppService
 {
     private readonly IUserRepository _userRepository = userRepository
         ?? throw new ArgumentNullException(nameof(userRepository));
@@ -21,14 +20,12 @@ public class AuthAppService(
         ?? throw new ArgumentNullException(nameof(passwordHasher));
     private readonly IVerificationCodeGenerator _verificationCodeGenerator = verificationCodeGenerator
         ?? throw new ArgumentNullException(nameof(verificationCodeGenerator));
+    private readonly VerificationCodeHasher _verificationCodeHasher = verificationCodeHasher
+        ?? throw new ArgumentNullException(nameof(verificationCodeHasher));
     private readonly IJwtTokenGenerator _jwtTokenGenerator = jwtTokenGenerator
         ?? throw new ArgumentNullException(nameof(jwtTokenGenerator));
     private readonly IEmailSender _emailSender = emailSender
         ?? throw new ArgumentNullException(nameof(emailSender));
-    private readonly ILogger<AuthAppService> _logger = logger
-        ?? throw new ArgumentNullException(nameof(logger));
-
-
     public async Task<GenericMessageResponseDto> SignUpAsync(
         SignUpRequestDto input,
         CancellationToken cancellationToken = default)
@@ -40,27 +37,25 @@ public class AuthAppService(
         }
 
         var normalizedEmail = input.Email.Trim().ToLowerInvariant();
+        await using var transaction = await _userRepository.BeginAuthOperationAsync(normalizedEmail, cancellationToken);
         var existingUser = await _userRepository.FindByEmailAsync(normalizedEmail, cancellationToken);
         if (existingUser != null)
         {
-            if (existingUser.Status == UserAccountStatus.Active)
+            if (existingUser.Status != UserAccountStatus.PendingVerification)
             {
                 throw new InvalidOperationException("A user with this email address already exists.");
             }
-
-            // If account is still pending verification, update password hash and resend verification code
-            existingUser.PasswordHash = _passwordHasher.HashPassword(existingUser, input.Password);
-            await _userRepository.UpdateUserAsync(existingUser, cancellationToken);
 
             await _userRepository.InvalidateVerificationCodesForUserAsync(existingUser.UserId, cancellationToken);
             var code = _verificationCodeGenerator.GenerateNumericCode();
             await _userRepository.AddVerificationCodeAsync(new EmailVerificationCodeEntity
             {
                 UserId = existingUser.UserId,
-                Code = code,
+                Code = _verificationCodeHasher.Hash(existingUser.UserId, "verify-email", code),
                 ExpiresAtUtc = DateTime.UtcNow.AddMinutes(UserConsts.VerificationCodeExpiryMinutes)
             }, cancellationToken);
 
+            await transaction.CommitAsync(cancellationToken);
             await _emailSender.SendVerificationCodeAsync(normalizedEmail, code, cancellationToken);
             return new GenericMessageResponseDto
             {
@@ -85,19 +80,12 @@ public class AuthAppService(
         await _userRepository.AddVerificationCodeAsync(new EmailVerificationCodeEntity
         {
             UserId = user.UserId,
-            Code = verificationCode,
+            Code = _verificationCodeHasher.Hash(user.UserId, "verify-email", verificationCode),
             ExpiresAtUtc = DateTime.UtcNow.AddMinutes(UserConsts.VerificationCodeExpiryMinutes)
         }, cancellationToken);
 
-        try
-        {
-            await _emailSender.SendVerificationCodeAsync(user.Email, verificationCode, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to send initial verification email to {Email}", user.Email);
-            // Don't fail registration completely, the user can re-trigger sign-up with pending status to resend
-        }
+        await transaction.CommitAsync(cancellationToken);
+        await _emailSender.SendVerificationCodeAsync(user.Email, verificationCode, cancellationToken);
 
         return new GenericMessageResponseDto
         {
@@ -111,6 +99,7 @@ public class AuthAppService(
         CancellationToken cancellationToken = default)
     {
         var normalizedEmail = input.Email.Trim().ToLowerInvariant();
+        await using var transaction = await _userRepository.BeginAuthOperationAsync(normalizedEmail, cancellationToken);
         var user = await _userRepository.FindByEmailAsync(normalizedEmail, cancellationToken)
             ?? throw new KeyNotFoundException("User not found.");
 
@@ -123,6 +112,11 @@ public class AuthAppService(
             };
         }
 
+        if (user.Status != UserAccountStatus.PendingVerification)
+        {
+            throw new InvalidOperationException("This user account cannot be verified.");
+        }
+
         var latestCode = await _userRepository.GetLatestActiveVerificationCodeAsync(user.UserId, cancellationToken)
             ?? throw new InvalidOperationException("No valid verification code found. Please request a new one.");
 
@@ -131,7 +125,7 @@ public class AuthAppService(
             throw new InvalidOperationException("Verification code has expired. Please request a new one.");
         }
 
-        if (!string.Equals(latestCode.Code, input.Code.Trim(), StringComparison.Ordinal))
+        if (!_verificationCodeHasher.Verify(user.UserId, "verify-email", input.Code.Trim(), latestCode.Code))
         {
             throw new ArgumentException("Invalid verification code.");
         }
@@ -142,8 +136,7 @@ public class AuthAppService(
 
         user.Status = UserAccountStatus.Active;
         await _userRepository.UpdateUserAsync(user, cancellationToken);
-        await _userRepository.DeleteVerificationCodeAsync(input.Code, cancellationToken);
-
+        await transaction.CommitAsync(cancellationToken);
         return new GenericMessageResponseDto
         {
             Success = true,
@@ -156,6 +149,7 @@ public class AuthAppService(
         CancellationToken cancellationToken = default)
     {
         var normalizedEmail = input.Email.Trim().ToLowerInvariant();
+        await using var transaction = await _userRepository.BeginAuthOperationAsync(normalizedEmail, cancellationToken);
         var user = await _userRepository.FindByEmailAsync(normalizedEmail, cancellationToken)
             ?? throw new UnauthorizedAccessException("Invalid email or password.");
 
@@ -177,6 +171,7 @@ public class AuthAppService(
 
         user.LastLoginAtUtc = DateTime.UtcNow;
         await _userRepository.UpdateUserAsync(user, cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
 
         var (token, expiresIn) = _jwtTokenGenerator.GenerateToken(user);
 
@@ -196,6 +191,7 @@ public class AuthAppService(
         CancellationToken cancellationToken = default)
     {
         var normalizedEmail = input.Email.Trim().ToLowerInvariant();
+        await using var transaction = await _userRepository.BeginAuthOperationAsync(normalizedEmail, cancellationToken);
         var user = await _userRepository.FindByEmailAsync(normalizedEmail, cancellationToken);
 
         // Security practice: Always return success message to avoid email enumeration
@@ -214,10 +210,11 @@ public class AuthAppService(
         await _userRepository.AddPasswordResetCodeAsync(new PasswordResetCodeEntity
         {
             UserId = user.UserId,
-            Code = resetCode,
+            Code = _verificationCodeHasher.Hash(user.UserId, "reset-password", resetCode),
             ExpiresAtUtc = DateTime.UtcNow.AddMinutes(UserConsts.PasswordResetCodeExpiryMinutes)
         }, cancellationToken);
 
+        await transaction.CommitAsync(cancellationToken);
         await _emailSender.SendPasswordResetCodeAsync(user.Email, resetCode, cancellationToken);
 
         return new GenericMessageResponseDto
@@ -238,6 +235,7 @@ public class AuthAppService(
         }
 
         var normalizedEmail = input.Email.Trim().ToLowerInvariant();
+        await using var transaction = await _userRepository.BeginAuthOperationAsync(normalizedEmail, cancellationToken);
         var user = await _userRepository.FindByEmailAsync(normalizedEmail, cancellationToken)
             ?? throw new KeyNotFoundException("User not found.");
 
@@ -249,7 +247,7 @@ public class AuthAppService(
             throw new InvalidOperationException("Password reset code has expired. Please request a new one.");
         }
 
-        if (!string.Equals(activeCode.Code, input.Code.Trim(), StringComparison.Ordinal))
+        if (!_verificationCodeHasher.Verify(user.UserId, "reset-password", input.Code.Trim(), activeCode.Code))
         {
             throw new ArgumentException("Invalid password reset code.");
         }
@@ -259,7 +257,9 @@ public class AuthAppService(
         await _userRepository.InvalidatePasswordResetCodesForUserAsync(user.UserId, cancellationToken);
 
         user.PasswordHash = _passwordHasher.HashPassword(user, input.NewPassword);
+        user.SecurityStamp = Guid.NewGuid();
         await _userRepository.UpdateUserAsync(user, cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
 
         return new GenericMessageResponseDto
         {

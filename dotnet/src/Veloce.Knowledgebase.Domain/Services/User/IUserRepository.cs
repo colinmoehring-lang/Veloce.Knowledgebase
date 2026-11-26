@@ -2,6 +2,14 @@ namespace Veloce.Knowledgebase.Services.User;
 
 public interface IUserRepository
 {
+    Task<IAuthTransaction> BeginAuthOperationAsync(
+        string normalizedEmail,
+        CancellationToken cancellationToken = default);
+
+    Task<UserEntity?> GetByIdForUpdateAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default);
+
     Task<UserEntity?> GetByIdAsync(
         Guid userId,
         CancellationToken cancellationToken = default);
@@ -27,10 +35,6 @@ public interface IUserRepository
 
     Task AddVerificationCodeAsync(
         EmailVerificationCodeEntity codeEntity,
-        CancellationToken cancellationToken = default);
-
-    Task DeleteVerificationCodeAsync(
-        string code,
         CancellationToken cancellationToken = default);
 
     Task<EmailVerificationCodeEntity?> GetLatestActiveVerificationCodeAsync(

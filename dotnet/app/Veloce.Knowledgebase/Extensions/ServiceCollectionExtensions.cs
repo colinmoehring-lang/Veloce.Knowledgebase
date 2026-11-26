@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using System.Text;
+using System.Net;
+using Veloce.Knowledgebase.Services.User;
 
 namespace Veloce.Knowledgebase.Extensions;
 
@@ -33,8 +36,11 @@ internal static class ServiceCollectionExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        var jwtSecretKey = configuration["Jwt:SecretKey"]
-            ?? "SuperSecretDefaultKeyForDevelopmentOnly123456!";
+        var jwtSecretKey = configuration["Jwt:SecretKey"];
+        if (string.IsNullOrWhiteSpace(jwtSecretKey) || Encoding.UTF8.GetByteCount(jwtSecretKey) < 32)
+        {
+            throw new InvalidOperationException("Jwt:SecretKey must be configured with at least 32 UTF-8 bytes.");
+        }
         var key = Encoding.UTF8.GetBytes(jwtSecretKey);
 
         services.AddAuthentication(options =>
@@ -50,9 +56,31 @@ internal static class ServiceCollectionExtensions
             {
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(key),
-                ValidateIssuer = false,
-                ValidateAudience = false,
+                ValidateIssuer = true,
+                ValidIssuer = configuration["Jwt:Issuer"] ?? "Veloce.Knowledgebase",
+                ValidateAudience = true,
+                ValidAudience = configuration["Jwt:Audience"] ?? "Veloce.Knowledgebase.Clients",
                 ClockSkew = TimeSpan.Zero
+            };
+            options.Events = new JwtBearerEvents
+            {
+                OnTokenValidated = async context =>
+                {
+                    var userId = context.Principal?.GetUserId();
+                    var stamp = context.Principal?.FindFirst("security_stamp")?.Value;
+                    if (userId is null || !Guid.TryParse(stamp, out var securityStamp))
+                    {
+                        context.Fail("Token is missing its user identity or security stamp.");
+                        return;
+                    }
+
+                    var repository = context.HttpContext.RequestServices.GetRequiredService<IUserRepository>();
+                    var user = await repository.FindByIdAsync(userId.Value, context.HttpContext.RequestAborted);
+                    if (user is null || user.Status != UserAccountStatus.Active || user.SecurityStamp != securityStamp)
+                    {
+                        context.Fail("Token is no longer valid.");
+                    }
+                }
             };
         });
 
@@ -93,19 +121,24 @@ internal static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Configures rate limiting policies including the AuthRateLimitPolicy used by AuthController.
+    /// Configures distributed authentication limits and explicitly trusted proxies.
     /// </summary>
     internal static IServiceCollection AddKnbRateLimiting(this IServiceCollection services)
     {
-        services.AddRateLimiter(options =>
+        services.AddScoped<AuthRateLimitFilter>();
+        services.AddScoped<AuthRateLimitStore>();
+        services.Configure<MvcOptions>(options => options.Filters.AddService<AuthRateLimitFilter>());
+        services.AddOptions<ForwardedHeadersOptions>().Configure<IConfiguration>((options, configuration) =>
         {
-            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-            options.AddFixedWindowLimiter("AuthRateLimitPolicy", opt =>
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            foreach (var value in (configuration["Proxy:KnownProxies"] ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             {
-                opt.Window = TimeSpan.FromMinutes(1);
-                opt.PermitLimit = 10;
-                opt.QueueLimit = 0;
-            });
+                if (!IPAddress.TryParse(value, out var address))
+                {
+                    throw new InvalidOperationException($"Invalid trusted proxy address: {value}");
+                }
+                options.KnownProxies.Add(address);
+            }
         });
 
         return services;

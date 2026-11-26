@@ -11,6 +11,7 @@ public class VeloceDbContext(DbContextOptions<VeloceDbContext> options)
     public DbSet<UserEntity> Users { get; set; }
     public DbSet<EmailVerificationCodeEntity> EmailVerificationCodes { get; set; }
     public DbSet<PasswordResetCodeEntity> PasswordResetCodes { get; set; }
+    public DbSet<AuthRateLimitBucket> AuthRateLimitBuckets { get; set; }
     public DbSet<VehicleEntity> Vehicles { get; set; }
     public DbSet<RideEntity> Rides { get; set; }
     public DbSet<RidePointEntity> RidePoints { get; set; }
@@ -18,6 +19,13 @@ public class VeloceDbContext(DbContextOptions<VeloceDbContext> options)
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<AuthRateLimitBucket>(entity =>
+        {
+            entity.HasKey(x => x.Key);
+            entity.Property(x => x.Key).HasMaxLength(64);
+            entity.HasIndex(x => x.WindowEndsAtUtc);
+        });
 
         modelBuilder.Entity<UserEntity>(entity =>
         {
@@ -34,7 +42,8 @@ public class VeloceDbContext(DbContextOptions<VeloceDbContext> options)
         {
             entity.HasKey(x => x.Id);
             entity.HasIndex(x => new { x.UserId, x.IsUsed, x.ExpiresAtUtc });
-            entity.Property(x => x.Code).IsRequired().HasMaxLength(16);
+            entity.Property(x => x.Code).IsRequired().HasMaxLength(64);
+            entity.HasOne<UserEntity>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
             entity.Property(x => x.ExpiresAtUtc).IsRequired();
             entity.Property(x => x.CreatedAtUtc).IsRequired();
         });
@@ -43,7 +52,8 @@ public class VeloceDbContext(DbContextOptions<VeloceDbContext> options)
         {
             entity.HasKey(x => x.Id);
             entity.HasIndex(x => new { x.UserId, x.IsUsed, x.ExpiresAtUtc });
-            entity.Property(x => x.Code).IsRequired().HasMaxLength(16);
+            entity.Property(x => x.Code).IsRequired().HasMaxLength(64);
+            entity.HasOne<UserEntity>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
             entity.Property(x => x.ExpiresAtUtc).IsRequired();
             entity.Property(x => x.CreatedAtUtc).IsRequired();
         });
