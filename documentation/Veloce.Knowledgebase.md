@@ -19,7 +19,8 @@ SMTP-Konto mit STARTTLS. Konfiguration kann über Umgebungsvariablen oder lokal
 | `Jwt__ExpiryMinutes` | Optional; Standard 120 Minuten |
 | `Smtp__Username`, `Smtp__Password` | Zugangsdaten für den E-Mail-Versand |
 | `Smtp__Host`, `Smtp__Port` | Optional; Standard `smtp-relay.brevo.com:587`, STARTTLS |
-| `Smtp__FromEmail`, `Smtp__FromName` | Optional; Standard `noreply@investra.de` und `Investra`; Absender beim Anbieter verifizieren |
+| `Smtp__FromEmail` | Pflicht; beim Anbieter verifizierte Absenderadresse |
+| `Smtp__FromName` | Optional; Standard `Veloce` |
 | `Proxy__KnownProxies` | Optional; kommaseparierte, ausdrücklich vertrauenswürdige Proxy-IP-Adressen für Forwarded Headers |
 
 Die Datenbankverbindung muss als Npgsql-Zeichenfolge vorliegen, beispielsweise
@@ -37,6 +38,7 @@ dotnet user-secrets set "ConnectionStrings:DefaultConnection" "<Npgsql-Verbindun
 dotnet user-secrets set "Jwt:SecretKey" "<zufällig-generierter-Schlüssel>" --project .\dotnet\app\Veloce.Knowledgebase
 dotnet user-secrets set "Smtp:Username" "<SMTP-Benutzer>" --project .\dotnet\app\Veloce.Knowledgebase
 dotnet user-secrets set "Smtp:Password" "<SMTP-Passwort>" --project .\dotnet\app\Veloce.Knowledgebase
+dotnet user-secrets set "Smtp:FromEmail" "<verifizierte-Absenderadresse>" --project .\dotnet\app\Veloce.Knowledgebase
 dotnet run --project .\dotnet\app\Veloce.Knowledgebase --launch-profile http
 ```
 
